@@ -1,0 +1,46 @@
+DROP PROCEDURE IF EXISTS CreateSequence;
+ 
+  DELIMITER //
+ 
+  CREATE PROCEDURE CreateSequence (name VARCHAR(30), start INT, inc INT)
+  BEGIN
+     -- Create a table to store sequences
+     CREATE TABLE IF NOT EXISTS _sequences
+     (
+         name VARCHAR(70) NOT NULL UNIQUE,
+         next INT NOT NULL,
+         inc INT NOT NULL
+     );
+ 
+     -- Add the new sequence
+     INSERT INTO _sequences VALUES (name, start, inc);  
+  END
+  //
+  DELIMITER ;
+  
+  
+   -- Create a sequence
+  CALL CreateSequence('_sequences', 1, 1);
+  
+  
+  
+  DROP FUNCTION IF EXISTS NextVal;
+ 
+  DELIMITER //
+ 
+  CREATE FUNCTION NextVal (vname VARCHAR(30))
+    RETURNS INT
+  BEGIN
+     -- Retrieve and update in single statement
+     UPDATE _sequences
+       SET next = (@next := next) + 1
+       WHERE name = vname;
+ 
+     RETURN @next;
+  END
+  //
+  DELIMITER ;
+  
+  
+  -- Get next values
+  SELECT NextVal('transaction_id_seq');
